@@ -1,0 +1,12 @@
+{"timestamp":"2026-10-08T14:12:02.100097Z","level":"info","event":"DAG bundles loaded: dags-folder","logger":"airflow.dag_processing.bundles.manager.DagBundlesManager","filename":"manager.py","lineno":209}
+{"timestamp":"2026-10-08T14:12:02.103167Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/nyz_project.py","logger":"airflow.dag_processing.dagbag.BundleDagBag","filename":"dagbag.py","lineno":469}
+{"timestamp":"2026-10-08T14:12:17.133763Z","level":"info","event":"   VendorID tpep_pickup_datetime  ... Airport_fee  cbd_congestion_fee","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:17.135484Z","level":"info","event":"0         2  2026-01-01 00:54:04  ...         0.0                0.00","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:17.136567Z","level":"info","event":"1         1  2026-01-01 00:34:04  ...         0.0                0.75","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:17.137393Z","level":"info","event":"2         1  2026-01-01 00:57:06  ...         0.0                0.75","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:17.138132Z","level":"info","event":"3         2  2026-01-01 00:15:22  ...         0.0                0.75","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:17.138928Z","level":"info","event":"4         2  2026-01-01 00:27:13  ...         0.0                0.75","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:17.139644Z","level":"info","event":"","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:17.140488Z","level":"info","event":"[5 rows x 20 columns]","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:34.895891Z","level":"info","event":"Data uploaded into S3 Bucket 'hariawsbucket2026' with key 'bronze/yellow_tripdata_2026-01.parquet'","logger":"task.stdout"}
+{"timestamp":"2026-10-08T14:12:34.918295Z","level":"info","event":"Done. Returned value was: None","logger":"airflow.task.operators.airflow.providers.standard.decorators.python._PythonDecoratedOperator","filename":"python.py","lineno":229}
