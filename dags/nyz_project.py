@@ -12,20 +12,25 @@ from airflow.sdk import dag, task
 
 def nyz_project():
 
-    @task.python(retries=3,retry_delay=timedelta(seconds=5))
+    @task.python(retries=3, retry_delay=timedelta(seconds=5))
     def extract_load():
-        # urls = [
-        #     "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2026-01.parquet",
-        #     "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2026-01.parquet",
 
-
-        # ]
+        urls = [
+            "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2026-01.parquet",
+            "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2026-01.parquet",
+            "https://d37ci6vzurychx.cloudfront.net/trip-data/fhv_tripdata_2026-01.parquet"
+        ]
 
         obj = BronzeLayer()
-        url="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2026-01.parquet"
-        filename = url.split("/")[-1]
-        data = obj.ingest_data_api(url)
-        obj.put_data_s3('hariawsbucket2026',f'bronze/{filename}',data)
+        for url in urls:
+            filename = url.split("/")[-1]
+            table_name = filename.split("_")[0]
+            data = obj.ingest_data_api(url)
+            obj.put_data_s3(
+                "hariawsbucket2026",
+                f"bronze/{table_name}/{filename}",
+                data
+            )
 
     extract_load()
 
