@@ -1,4 +1,5 @@
 import os
+import time
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from utils.bronze_layer import BronzeLayer
@@ -33,23 +34,32 @@ def nyz_project():
                 data
             )
 
-    @task.python(retries=3, retry_delay=timedelta(seconds=5))
+    @task.python(retries=0)
     def transform_load_s3(ti):
 
         obj = SilverLayer()
-        job_run_id = obj.trigger_spark_job('Bronze')
-        print(f"Glue job triggered: {job_run_id}")
-        
-        try:
-            obj.glue_client.get_waiter("job_run_succeeded").wait(
-                JobName=job_name,
-                RunId=job_run_id
-            )
-            print("Glue job completed successfully!")
 
-        except Exception as e:
-            print(f"Glue job failed: {e}")
-            raise
+        job_name = "Bronze"
+
+        # Trigger the Glue job once
+        job_run_id = obj.trigger_spark_job(job_name)
+        print(f"Glue job triggered. Run ID: {job_run_id}")
+
+        # Check the status every 30 seconds
+        while True:
+            status = obj.get_job_status(job_name, job_run_id)
+            print(f"Glue job status: {status}")
+
+            if status == "SUCCEEDED":
+                print("Glue job completed successfully!")
+                break
+
+            elif status in ["FAILED", "STOPPED", "TIMEOUT", "ERROR", "EXPIRED"]:
+                raise Exception(f"Glue job failed with status: {status}")
+
+            else:
+                print("Glue job is processing. Checking again in 30 seconds...")
+                time.sleep(30)  
 
     extract_load()>> transform_load_s3()
 

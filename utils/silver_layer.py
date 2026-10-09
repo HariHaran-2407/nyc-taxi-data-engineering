@@ -26,4 +26,16 @@ class SilverLayer():
 
         return response['JobRunId']
 
+    def get_job_status(self, jobName, jobRunId):
+        glue_client = boto3.client(
+            "glue",
+            region_name="us-east-1",
+            aws_access_key_id=os.getenv("aws_access_key_id"),
+            aws_secret_access_key=os.getenv("aws_secret_access_key")
+        )
 
+        response = glue_client.get_job_run(
+            JobName=jobName,
+            RunId=jobRunId
+        )
+        return response["JobRun"]["JobRunState"]
