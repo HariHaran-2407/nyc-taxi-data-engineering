@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from utils.bronze_layer import BronzeLayer
+from utils.silver_layer import SilverLayer
 from datetime import timedelta
 from airflow.sdk import dag, task
 
@@ -32,6 +33,24 @@ def nyz_project():
                 data
             )
 
-    extract_load()
+    @task.python(retries=3, retry_delay=timedelta(seconds=5))
+    def transform_load_s3(ti):
+
+        obj = SilverLayer()
+        job_run_id = obj.trigger_spark_job('Bronze')
+        print(f"Glue job triggered: {job_run_id}")
+        
+        try:
+            obj.glue_client.get_waiter("job_run_succeeded").wait(
+                JobName=job_name,
+                RunId=job_run_id
+            )
+            print("Glue job completed successfully!")
+
+        except Exception as e:
+            print(f"Glue job failed: {e}")
+            raise
+
+    extract_load()>> transform_load_s3()
 
 nyz_project_dag = nyz_project()
