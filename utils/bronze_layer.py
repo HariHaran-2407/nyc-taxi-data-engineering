@@ -16,11 +16,6 @@ class BronzeLayer:
 
             df = pd.read_parquet(BytesIO(data))
 
-            # parquet_buffer= BytesIO()
-            # df.to_parquet(parquet_buffer,index=False)
-
-            print(df.head())
-
             return data
         
         else:
@@ -47,7 +42,7 @@ class BronzeLayer:
 
         s3_client = boto3.client(
             's3',
-            region_name='us-east-1',
+            region_name='ap-south-2',
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key
         )
@@ -71,7 +66,7 @@ obj = BronzeLayer()
 url = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
 data = obj.ingest_csv_api(url)
 obj.put_data_s3(
-            "hariawsbucket2026",
+            "harinyzbucket2026",
             "bronze/lookup/taxi_zone_lookup.csv",
             data
 )

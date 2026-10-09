@@ -15,7 +15,7 @@ class SilverLayer():
 
         glue_client = boto3.client(
             'glue',
-            region_name='us-east-1',
+            region_name='ap-south-2',
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key
         )
@@ -29,7 +29,7 @@ class SilverLayer():
     def get_job_status(self, jobName, jobRunId):
         glue_client = boto3.client(
             "glue",
-            region_name="us-east-1",
+            region_name="ap-south-2",
             aws_access_key_id=os.getenv("aws_access_key_id"),
             aws_secret_access_key=os.getenv("aws_secret_access_key")
         )
@@ -43,7 +43,7 @@ class SilverLayer():
     def trigger_crawler(self,crawler_name):
         glue_client = boto3.client(
             "glue",
-            region_name="us-east-1",
+            region_name="ap-south-2",
             aws_access_key_id=os.getenv("aws_access_key_id"),
             aws_secret_access_key=os.getenv("aws_secret_access_key")
         )
@@ -58,7 +58,7 @@ class SilverLayer():
     def get_crawler_status(self, crawler_name):
         glue_client = boto3.client(
             "glue",
-            region_name="us-east-1",
+            region_name="ap-south-2",
             aws_access_key_id=os.getenv("aws_access_key_id"),
             aws_secret_access_key=os.getenv("aws_secret_access_key")
         )

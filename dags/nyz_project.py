@@ -18,7 +18,7 @@ def nyz_project():
 
     @task.python(retries=3, retry_delay=timedelta(seconds=5))
     def extract_load():
-
+        bucket="harinyzbucket2026"
         urls = [
             "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2026-01.parquet",
             "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2026-01.parquet",
@@ -31,7 +31,7 @@ def nyz_project():
             table_name = filename.split("_")[0]
             data = obj.ingest_data_api(url)
             obj.put_data_s3(
-                "hariawsbucket2026",
+                "harinyzbucket2026",
                 f"bronze/{table_name}/{filename}",
                 data
             )
@@ -48,7 +48,7 @@ def nyz_project():
         data = obj.ingest_csv_api(url)
 
         obj.put_data_s3(
-            "hariawsbucket2026",
+            "harinyzbucket2026",
             "bronze/lookup/taxi_zone_lookup.csv",
             data
         )
@@ -60,7 +60,7 @@ def nyz_project():
 
         obj = SilverLayer()
 
-        job_name = "Bronze"
+        job_name = "nyz_bronze_to_silver"
 
         # Trigger the Glue job once
         job_run_id = obj.trigger_spark_job(job_name)
@@ -79,7 +79,7 @@ def nyz_project():
                 raise Exception(f"Glue job failed with status: {status}")
 
             else:
-                print("Glue job is processing. Checking again in 30 seconds...")
+                print("Glue job is processing")
                 time.sleep(30)  
 
     # Task to trigger Glue Crawler
@@ -87,7 +87,7 @@ def nyz_project():
     @task.python(retries=3, retry_delay=timedelta(seconds=5))
     def trigger_crawler():
         obj = SilverLayer()
-        crawler_name = 'crawler_silver'
+        crawler_name = 'nyz_crawler'
         response = obj.trigger_crawler(crawler_name)
         print(response)
 
@@ -107,7 +107,7 @@ def nyz_project():
                     )
 
             elif state in ["RUNNING", "STOPPING"]:
-                print("Crawler is processing. Checking again in 30 seconds...")
+                print("Crawler is processing")
                 time.sleep(30)
 
 
