@@ -39,3 +39,40 @@ class SilverLayer():
             RunId=jobRunId
         )
         return response["JobRun"]["JobRunState"]
+
+    def trigger_crawler(self,crawler_name):
+        glue_client = boto3.client(
+            "glue",
+            region_name="us-east-1",
+            aws_access_key_id=os.getenv("aws_access_key_id"),
+            aws_secret_access_key=os.getenv("aws_secret_access_key")
+        )
+
+        response = glue_client.start_crawler(
+             Name=crawler_name
+        )
+
+        return response
+
+    
+    def get_crawler_status(self, crawler_name):
+        glue_client = boto3.client(
+            "glue",
+            region_name="us-east-1",
+            aws_access_key_id=os.getenv("aws_access_key_id"),
+            aws_secret_access_key=os.getenv("aws_secret_access_key")
+        )
+
+        response = glue_client.get_crawler(Name=crawler_name)
+
+        state = response["Crawler"]["State"]
+        last_status = response["Crawler"].get("LastCrawl", {}).get("Status")
+
+        return state, last_status
+
+if __name__ == "__main__":
+    
+    obj = SilverLayer()
+    response = obj.trigger_crawler('crawler_silver')
+    print(response)
+
