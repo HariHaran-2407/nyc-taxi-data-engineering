@@ -56,7 +56,7 @@ def nyz_project():
     # Task to load data into s3 silver folder
 
     @task.python(retries=0)
-    def transform_load_s3(ti):
+    def silver_transform(ti):
 
         obj = SilverLayer()
 
@@ -69,7 +69,6 @@ def nyz_project():
         # Check the status every 30 seconds
         while True:
             status = obj.get_job_status(job_name, job_run_id)
-            print(f"Glue job status: {status}")
 
             if status == "SUCCEEDED":
                 print("Glue job completed successfully!")
@@ -79,23 +78,19 @@ def nyz_project():
                 raise Exception(f"Glue job failed with status: {status}")
 
             else:
-                print("Glue job is processing")
-                time.sleep(30)  
+                time.sleep(10)  
 
     # Task to trigger Glue Crawler
 
     @task.python(retries=3, retry_delay=timedelta(seconds=5))
-    def trigger_crawler():
+    def silver_crawler():
         obj = SilverLayer()
         crawler_name = 'nyz_crawler'
         response = obj.trigger_crawler(crawler_name)
         print(response)
 
-        
         while True:
             state, last_status = obj.get_crawler_status(crawler_name)
-
-            print(f"Crawler state: {state}")
 
             if state == "READY":
                 if last_status == "SUCCEEDED":
@@ -107,15 +102,69 @@ def nyz_project():
                     )
 
             elif state in ["RUNNING", "STOPPING"]:
-                print("Crawler is processing")
-                time.sleep(30)
+                time.sleep(10)
 
 
+    # Task to run Gold Fact Taxi Trip Glue job
+    @task.python(retries=0)
+    def gold_transform():
+        obj = SilverLayer()
+        job_name = "nyz_gold_layer"
+
+        job_run_id = obj.trigger_spark_job(job_name)
+        print(f"Gold Glue job triggered. Run ID: {job_run_id}")
+
+        while True:
+            status = obj.get_job_status(job_name, job_run_id)
+
+            if status == "SUCCEEDED":
+                print("Gold Glue job completed successfully!")
+                break
+
+            elif status in [
+                "FAILED", "STOPPED", "TIMEOUT", "ERROR", "EXPIRED"
+            ]:
+                raise Exception(
+                    f"Gold Glue job failed with status: {status}"
+                )
+
+            else:
+                time.sleep(10)
+
+    # Task to trigger Gold Crawler
+    @task.python(retries=3, retry_delay=timedelta(seconds=5))
+    def gold_crawler():
+        obj = SilverLayer()
+
+        crawler_name = "nyz_gold_crawler"
+
+        obj.trigger_crawler(crawler_name)
+        print(f"Gold crawler triggered: {crawler_name}")
+
+        while True:
+            state, last_status = obj.get_crawler_status(crawler_name)
+           
+            if state == "READY":
+                if last_status == "SUCCEEDED":
+                    print("Gold crawler completed successfully!")
+                    break
+                else:
+                    raise Exception(
+                        f"Gold crawler failed. Last status: {last_status}"
+                    )
+
+            elif state in ["RUNNING", "STOPPING"]:
+                time.sleep(10)
+    
     extract = extract_load()
     lookup = extract_load_lookup()
-    transform = transform_load_s3()
-    crawler = trigger_crawler()
+    transform = silver_transform()
+    crawler = silver_crawler()
+
+    gold_fact = gold_transform()
+    gold_catalog = gold_crawler()
 
     [extract, lookup] >> transform >> crawler
+    crawler >> gold_fact >> gold_catalog
 
 nyz_project_dag = nyz_project()
